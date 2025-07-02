@@ -1,0 +1,13 @@
+/home/iratus/Documentos/blockchain_projects/cryptozombies/zombies-contract/target/debug/deps/libtoml-e5e3df06cf922450.rmeta: /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/lib.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/map.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/value.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/de.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/ser.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/macros.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/edit.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/fmt.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/table.rs
+
+/home/iratus/Documentos/blockchain_projects/cryptozombies/zombies-contract/target/debug/deps/toml-e5e3df06cf922450.d: /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/lib.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/map.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/value.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/de.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/ser.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/macros.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/edit.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/fmt.rs /home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/table.rs
+
+/home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/lib.rs:
+/home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/map.rs:
+/home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/value.rs:
+/home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/de.rs:
+/home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/ser.rs:
+/home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/macros.rs:
+/home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/edit.rs:
+/home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/fmt.rs:
+/home/iratus/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.7.8/src/table.rs:
