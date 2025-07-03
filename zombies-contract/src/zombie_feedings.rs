@@ -12,7 +12,7 @@ pub trait ZombieFeeding:
     fn feed_and_multiply(&self, zombie_id: usize, target_dna: u64) {
         let caller = self.blockchain().get_caller(); // Obtém o endereço de quem chamou esta função.
 
-        // LINHA EXPLICADA: require!(caller == self.zombie_owner(&zombie_id).get(), "Only the owner of the zombie can perform this operation");
+        // require!(caller == self.zombie_owner(&zombie_id).get(), "Only the owner of the zombie can perform this operation");
         // O que faz: Esta linha é um "portão de segurança". Ela verifica se uma condição é verdadeira.
         // Se a condição for FALSA, a execução da transação é PARADA IMEDIATAMENTE 
         
@@ -30,5 +30,21 @@ pub trait ZombieFeeding:
             "Only the owner of the zombie can perform this operation"
         );
         let my_zombie = self.zombies(&zombie_id).get(); // Se o "require!" passar, o código continua aqui.
+        // Obtém o número de dígitos que o DNA do zumbi deve ter (ex: 16).
+        let dna_digits = self.dna_digits().get();
+        // Calcula o valor máximo possível para um DNA com base no número de dígitos.
+        // Por exemplo, se dna_digits for 16, max_dna_value será 10^16.
+        let max_dna_value = u64::pow(10u64, dna_digits as u32);
+        // Garante que o 'target_dna' (DNA do "alimento") não exceda o tamanho máximo permitido,
+        // usando a operação de módulo (%). Isso "corta" o DNA para o número de dígitos correto.
+        let verified_target_dna = target_dna % max_dna_value;
+        // Calcula o DNA do novo zumbi (o "filho") como a média do DNA do zumbi original
+        // e do DNA do "alimento".
+        let new_dna = (my_zombie.dna + verified_target_dna) / 2;
+        // Cria um novo zumbi chamando a função 'create_zombie'.
+        // - 'caller': Define o proprietário do novo zumbi como o mesmo que chamou esta função.
+        // - 'ManagedBuffer::from(b"NoName")': Atribui o nome "NoName" ao novo zumbi.
+        // - 'new_dna': Usa o DNA recém-calculado para o novo zumbi.
+        self.create_zombie(caller, ManagedBuffer::from(b"NoName"), new_dna);
     }
 }
