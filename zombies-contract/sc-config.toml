@@ -1,0 +1,4 @@
+[settings]
+
+[[proxy]]
+path = "src/kitty_ownership_proxy.rs"

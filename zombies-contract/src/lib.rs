@@ -6,14 +6,14 @@ multiversx_sc::derive_imports!();
 mod storage;
 mod zombie;
 mod zombie_factory;
-mod zombie_feeding;
+mod zombie_feedings;
 
 
 
 #[multiversx_sc::contract]
 pub trait ZombiesContract:
     zombie_factory::ZombieFactory
-    + zombie_feeding::ZombieFeeding
+    + zombie_feedings::ZombieFeeding
     + storage::Storage
 {
     #[init]

@@ -1,5 +1,0 @@
-/home/iratus/Documentos/blockchain_projects/cryptozombies/zombies-contract/target/debug/deps/libzombies_contract_scenario_rs_test-653a771a86676515.rmeta: tests/zombies_contract_scenario_rs_test.rs
-
-/home/iratus/Documentos/blockchain_projects/cryptozombies/zombies-contract/target/debug/deps/zombies_contract_scenario_rs_test-653a771a86676515.d: tests/zombies_contract_scenario_rs_test.rs
-
-tests/zombies_contract_scenario_rs_test.rs:
