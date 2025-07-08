@@ -1,7 +1,7 @@
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
 
-use crate::{storage, zombie_factory};
+use crate::{kitty_obj::Kitty, kitty_ownership_proxy, storage, zombie_factory};
 
 #[multiversx_sc::module]
 pub trait ZombieFeeding:
@@ -46,5 +46,32 @@ pub trait ZombieFeeding:
         // - 'ManagedBuffer::from(b"NoName")': Atribui o nome "NoName" ao novo zumbi.
         // - 'new_dna': Usa o DNA recém-calculado para o novo zumbi.
         self.create_zombie(caller, ManagedBuffer::from(b"NoName"), new_dna);
+    }
+
+     #[callback]
+    fn get_kitty_callback(
+        &self,
+        #[call_result] result: ManagedAsyncCallResult<Kitty>,
+        zombie_id: usize,
+    ) {
+        match result {
+            ManagedAsyncCallResult::Ok(kitty) => {},
+            ManagedAsyncCallResult::Err(_) => {},
+        }
+    }
+
+    #[endpoint]
+    fn feed_on_kitty(
+        &self,
+        zombie_id: usize,
+        kitty_id: usize,
+    ) {
+        let crypto_kitties_sc_address = self.crypto_kitties_sc_address().get();
+        self.tx()
+            .to(&crypto_kitties_sc_address)
+            .typed(kitty_ownership_proxy::KittyOwnershipProxy)
+            .get_kitty_by_id_endpoint(kitty_id)
+            .callback(self.callbacks().get_kitty_callback(zombie_id))
+            .async_call_and_exit();
     }
 }
