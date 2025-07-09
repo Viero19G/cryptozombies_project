@@ -55,7 +55,10 @@ pub trait ZombieFeeding:
         zombie_id: usize,
     ) {
         match result {
-            ManagedAsyncCallResult::Ok(kitty) => {},
+            ManagedAsyncCallResult::Ok(kitty) => {
+                let kitty_dna = kitty.genes;
+                self.feed_and_multiply(zombie_id, kitty_dna);
+            },
             ManagedAsyncCallResult::Err(_) => {},
         }
     }
