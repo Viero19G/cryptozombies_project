@@ -40,41 +40,43 @@ pub trait ZombieFeeding:
         let verified_target_dna = target_dna % max_dna_value;
         // Calcula o DNA do novo zumbi (o "filho") como a média do DNA do zumbi original
         // e do DNA do "alimento".
-        let new_dna = (my_zombie.dna + verified_target_dna) / 2;
+        let mut new_dna = (my_zombie.dna + verified_target_dna) / 2;
+        if species == ManagedBuffer::from(b"kitty") {
+            new_dna = new_dna - new_dna % 100 + 99;
+        }
         // Cria um novo zumbi chamando a função 'create_zombie'.
         // - 'caller': Define o proprietário do novo zumbi como o mesmo que chamou esta função.
         // - 'ManagedBuffer::from(b"NoName")': Atribui o nome "NoName" ao novo zumbi.
         // - 'new_dna': Usa o DNA recém-calculado para o novo zumbi.
         self.create_zombie(caller, ManagedBuffer::from(b"NoName"), new_dna);
     }
-
-     #[callback]
-    fn get_kitty_callback(
-        &self,
-        #[call_result] result: ManagedAsyncCallResult<Kitty>,
-        zombie_id: usize,
-    ) {
-        match result {
-            ManagedAsyncCallResult::Ok(kitty) => {
-                let kitty_dna = kitty.genes;
-                self.feed_and_multiply(zombie_id, kitty_dna);
-            },
-            ManagedAsyncCallResult::Err(_) => {},
-        }
+ #[callback]
+  fn get_kitty_callback(
+    &self,
+    #[call_result] result: ManagedAsyncCallResult<Kitty>,
+    zombie_id: usize,
+  ) {
+    match result {
+      ManagedAsyncCallResult::Ok(kitty) => {
+        let kitty_dna = kitty.genes;
+        self.feed_and_multiply(zombie_id, kitty_dna, ManagedBuffer::from(b"kitty"));
+      },
+      ManagedAsyncCallResult::Err(_) => {},
     }
+  }
 
-    #[endpoint]
-    fn feed_on_kitty(
-        &self,
-        zombie_id: usize,
-        kitty_id: usize,
-    ) {
-        let crypto_kitties_sc_address = self.crypto_kitties_sc_address().get();
-        self.tx()
-            .to(&crypto_kitties_sc_address)
-            .typed(kitty_ownership_proxy::KittyOwnershipProxy)
-            .get_kitty_by_id_endpoint(kitty_id)
-            .callback(self.callbacks().get_kitty_callback(zombie_id))
-            .async_call_and_exit();
-    }
+  #[endpoint]
+  fn feed_on_kitty(
+      &self,
+      zombie_id: usize,
+      kitty_id: usize,
+  ) {
+      let crypto_kitties_sc_address = self.crypto_kitties_sc_address().get();
+      self.tx()
+          .to(&crypto_kitties_sc_address)
+          .typed(kitty_ownership_proxy::KittyOwnershipProxy)
+          .get_kitty_by_id_endpoint(kitty_id)
+          .callback(self.callbacks().get_kitty_callback(zombie_id))
+          .async_call_and_exit();
+  }
 }
