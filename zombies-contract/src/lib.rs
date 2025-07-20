@@ -25,8 +25,9 @@ pub trait ZombiesContract:
     #[upgrade]
     fn upgrade(&self) {}
 
+    #[only_owner]
     #[endpoint]
-    fn set_crypto_kitties_sc_address(&self, address: ManagedAddress){
+    fn set_crypto_kitties_sc_address(&self, address: ManagedAddress) {
         self.crypto_kitties_sc_address().set(address);
     }
 }
