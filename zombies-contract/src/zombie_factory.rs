@@ -4,11 +4,17 @@ multiversx_sc::derive_imports!();
 use crate::{storage, zombie::Zombie};
 
 #[multiversx_sc::module]
-pub trait ZombieFactory: storage::Storage{
+pub trait ZombieFactory: storage::Storage {
     fn create_zombie(&self, owner: ManagedAddress, name: ManagedBuffer, dna: u64) {
         self.zombie_last_index().update(|id| {
             self.new_zombie_event(*id, &name, dna);
-            self.zombies(id).set(Zombie { name, dna });
+            let cooldown_time = self.cooldown_time().get();
+            self.zombies(id).set(Zombie {
+                name,
+                dna,
+                level: 1u16,
+                ready_time: self.blockchain().get_block_timestamp() + cooldown_time,
+            });
             self.owned_zombies(&owner).insert(*id);
             self.zombie_owner(id).set(owner);
             *id += 1;
