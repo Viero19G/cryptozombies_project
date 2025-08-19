@@ -1,8 +1,15 @@
-multiversx_sc::imports!();
-multiversx_sc::derive_imports!();
+// multiversx_sc::imports!();
+// multiversx_sc::derive_imports!();
 
-use crate::{kitty_obj::Kitty, kitty_ownership_proxy, storage, zombie_factory}; // Traz as "ferramentas" e "plantas" que precisamos para o jogo.
+// Traz as "ferramentas" e "plantas" que precisamos para o nosso jogo de zumbis.
+// - `Kitty`: a planta para entender o que é um gatinho.
+// - `kitty_ownership_proxy`: o manual para pedir informações sobre gatinhos a outro contrato inteligente.
+// - `storage`: as regras de como guardar informações.
+// - `zombie_factory`: as regras de como criar e gerenciar zumbis.
+use crate::{kitty_obj::Kitty, kitty_ownership_proxy, storage, zombie_factory};
 
+// #[multiversx_sc::module]
+// Esta é a declaração do nosso contrato inteligente na blockchain. É como a "fachada" do nosso prédio de jogo.
 #[multiversx_sc::module]
 pub trait ZombieFeeding: // Este é o "Livro de Regras" sobre como os zumbis se alimentam e se multiplicam.
     storage::Storage // Ele precisa das regras de "onde guardar as coisas".
@@ -12,6 +19,9 @@ pub trait ZombieFeeding: // Este é o "Livro de Regras" sobre como os zumbis se 
     // #[endpoint]
     // O que faz: Esta é uma "ação especial" que um jogador pode pedir para um zumbi fazer.
     // Ela recebe o ID do zumbi, o DNA da "comida" e o tipo de "comida" (se é gatinho ou não).
+    // Esta função agora é chamada de duas formas:
+    // 1. Diretamente, se o alimento não for um gatinho (fluxo antigo).
+    // 2. Por meio do `callback` após um gatinho ser obtido de outro contrato.
     #[endpoint]
     fn feed_and_multiply(&self, zombie_id: usize, target_dna: u64, species: ManagedBuffer) {
         let caller = self.blockchain().get_caller(); // Descobre quem está pedindo para o zumbi fazer a ação.
@@ -26,7 +36,6 @@ pub trait ZombieFeeding: // Este é o "Livro de Regras" sobre como os zumbis se 
         let mut new_dna = (my_zombie.dna + verified_target_dna) / 2; // Calcula o DNA do zumbi filhote (mistura dos pais).
 
         // NOVIDADE! REGRINHA DO GATINHO:
-        // if species == ManagedBuffer::from(b"kitty") { ... }
         // O que faz: Se a "comida" for um "gatinho" (a variável 'species' for igual a "kitty")...
         // Analogia: É como se o zumbi comesse uma "comida mágica" (o gatinho) que dá um toque especial no DNA do filhote!
         if species == ManagedBuffer::from(b"kitty") {
@@ -42,6 +51,11 @@ pub trait ZombieFeeding: // Este é o "Livro de Regras" sobre como os zumbis se 
         // O que faz: Cria o novo zumbi filhote com o DNA especial (se comeu gatinho) ou normal.
         // O "NoName" significa que o filhote nasce sem um nome definido ainda.
         self.create_zombie(caller, ManagedBuffer::from(b"NoName"), new_dna);
+
+        // AQUI ESTÁ UMA PARTE NOVA E MUITO IMPORTANTE!
+        // Após alimentar o zumbi, ele precisa "descansar".
+        // Chamamos a função `trigger_cooldown` para iniciar o tempo de espera.
+        self.trigger_cooldown(zombie_id);
     }
 
     // AÇÃO: ATIVAR O TEMPO DE DESCANSO (COOLDOWN)
@@ -84,6 +98,9 @@ pub trait ZombieFeeding: // Este é o "Livro de Regras" sobre como os zumbis se 
     // #[callback]
     // O que faz: Esta é uma "sala de espera" para a resposta da Fazenda de Gatinhos.
     // Quando a Fazenda de Gatinhos envia o gatinho pedido, esta função é ativada.
+    // POR QUE EXISTE: Para lidar com a natureza assíncrona da comunicação entre contratos.
+    // A função principal (`feed_on_kitty`) não pode parar de funcionar e esperar. Ela envia o pedido e,
+    // quando a resposta chegar, esta função de "retorno" é chamada pela blockchain para processá-la.
     #[callback]
     fn get_kitty_callback(
         &self,
@@ -92,27 +109,22 @@ pub trait ZombieFeeding: // Este é o "Livro de Regras" sobre como os zumbis se 
     ) {
         match result { // "Abre o envelope" para ver o que veio.
             ManagedAsyncCallResult::Ok(kitty) => { // Se o gatinho veio certinho:
-                // let kitty_dna = kitty.genes;
+                let kitty_dna = kitty.genes;
                 // O que faz: Pega os genes do gatinho que chegou.
-                // ATENÇÃO: `kitty.genes` é do tipo `KittyGenes`, que tem `fur_color`, `eye_color`, `meow_power`.
-                // Para usar isso como um `u64` para o DNA do zumbi, você precisa chamar a função `get_as_u64()`
-                // que você implementou na struct `KittyGenes`.
-                // A linha correta seria: `let kitty_dna = kitty.genes.get_as_u64();`
-                let kitty_dna = kitty.genes; // <--- CORREÇÃO NECESSÁRIA AQUI (ver nota acima)
-                // self.feed_and_multiply(zombie_id, kitty_dna, ManagedBuffer::from(b"kitty"));
+                // O tipo `Kitty` é um objeto do outro contrato (CryptoKitties).
+                // `kitty.genes` acessa a propriedade 'genes' desse objeto.
+                self.feed_and_multiply(zombie_id, kitty_dna, ManagedBuffer::from(b"kitty"));
                 // O que faz: Chama a função para alimentar o zumbi com o DNA do gatinho.
                 // O tipo da comida é "kitty", o que ativará a regra especial do DNA.
-                self.feed_and_multiply(zombie_id, kitty_dna, ManagedBuffer::from(b"kitty"));
             },
-            ManagedAsyncCallResult::Err(_) => { // Se deu algum erro ao pegar o gatinho:
-                // O que faz: Por enquanto, não faz nada. Mas aqui você poderia registrar o erro.
-            },
+            ManagedAsyncCallResult::Err(_) => {}, // Se deu algum erro ao pegar o gatinho, o código ignora. Poderia ser implementada uma lógica de erro aqui.
         }
     }
 
     // AÇÃO: PEDIR GATINHO PARA ALIMENTAR ZUMBI
     // #[endpoint]
     // O que faz: Esta é a ação que o jogador chama para que um zumbi se alimente de um gatinho.
+    // Ela não processa o DNA diretamente. Ela inicia a comunicação com outro contrato.
     #[endpoint]
     fn feed_on_kitty(
         &self,
@@ -120,7 +132,9 @@ pub trait ZombieFeeding: // Este é o "Livro de Regras" sobre como os zumbis se 
         kitty_id: usize, // O gatinho que será comido.
     ) {
         // REGRINHA IMPORTANTE: O zumbi precisa estar pronto para agir!
-        // require!(self.is_ready(zombie_id), "Zombie is not ready yet!"); // <--- ADICIONAR ESTA LINHA PARA ENFORÇAR O COOLDOWN
+        // Esta verificação é crucial para o modelo de "cooldown".
+        // `require!` interrompe a execução se a condição for falsa, e a mensagem de erro é retornada.
+        require!(self.is_ready(zombie_id), "Zombie is not ready yet!");
 
         let crypto_kitties_sc_address = self.crypto_kitties_sc_address().get(); // Pega o endereço da "Fazenda de Gatinhos".
         self.tx() // Prepara uma "carta" para enviar.
@@ -129,9 +143,16 @@ pub trait ZombieFeeding: // Este é o "Livro de Regras" sobre como os zumbis se 
             .get_kitty_by_id_endpoint(kitty_id) // O pedido é: "Me dê o gatinho com este ID".
             .callback(self.callbacks().get_kitty_callback(zombie_id)) // Anexa o "endereço de retorno" e o ID do zumbi para o contexto.
             .async_call_and_exit(); // Envia a carta e seu contrato continua outras coisas (não espera a resposta).
+            // Por que `.async_call_and_exit()`? Porque a MultiversX permite chamadas entre contratos.
+            // O `async_call` envia a requisição e a transação atual termina. Quando a resposta chegar,
+            // uma nova transação (interna, gerada pela blockchain) será criada para executar o `callback`.
+            // Isso impede que a transação do usuário fique presa, esperando por outra.
     }
 
-    // Mapeador de armazenamento para o endereço do contrato CryptoKitties
+    // AÇÃO: ARMAZENAR O ENDEREÇO DO CONTRATO DE GATINHOS
+    // #[storage_mapper("cryptoKittiesScAddress")]
+    // O que faz: Cria uma "caixinha" segura na blockchain para guardar o endereço do contrato dos CryptoKitties.
+    // Isso nos permite saber onde encontrar a "Fazenda de Gatinhos" a qualquer momento.
     #[storage_mapper("cryptoKittiesScAddress")]
     fn crypto_kitties_sc_address(&self) -> SingleValueMapper<ManagedAddress>;
 }
